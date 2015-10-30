@@ -1,10 +1,10 @@
-function [ y ] = Euler(y0, t0, t_end, dt, f);
+function [ y ] = Euler(y0, t0, t_end, dt, f)
 %UNTITLED3 Summary of this function goes here
 %   Detailed explanation goes here
 
 N=ceil((t_end-t0)/dt);
 
-y=zeros(N+1, 1);
+y=zeros(1, N+1);
 y(1)=y0;
 
 for k = 1:1:N;
