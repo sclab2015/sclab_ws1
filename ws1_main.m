@@ -1,125 +1,144 @@
 % main file for worksheet 1 of the scientific computing lab
 
-% definition of analytic solution and initial conditions
+% definition of the right-hand side, initial conditions and the analytic
+% solution
+f = @(t, y) (1 - t / 10) * t;
 analytic_sol = @(t) 10 ./ (1 + 9 * exp(-t));
 y0 = 1;
 t0 = 0;
-n_stepsizes = 4;
+t_end = 5;
 
 % definition of time steps and colors for plotting
-steps  = [1.0, 0.5, 0.25, 0.125];
+steps  = 2.^(0:-1:-3);  % [1; .5; .25; .125]
 colors = {'r+', 'g+', 'c+', 'm+'};
-times = linspace(0, 5, 41);
+assert(length(steps) == length(colors), 'number of steps ~= number of colors');
+times = t0 : steps(end) : t_end;
 
 % allocate memory for plot handles and define legend entries
-euler_plots = gobjects(1,3);
-heun_plots = gobjects(1,3);
-rk4_plots = gobjects(1,3);
-step_strings = {'step 1', 'step 1/2', 'step 1/4', 'step1/8'};
+euler_plots = gobjects(1, 3);
+heun_plots = gobjects(1, 3);
+rk4_plots = gobjects(1, 3);
+step_strings = {'step 1', 'step 1/2', 'step 1/4', 'step 1/8'};
+assert(length(steps) == length(step_strings), ...
+       'number of steps ~= number of labels');
 
 % allocate cells to store computed function values for different step sizes
-euler_vals = cell(1,n_stepsizes);
-heun_vals = cell(1,n_stepsizes);
-rk4_vals = cell(1,n_stepsizes);
+euler_vals = cell(1, length(steps));
+heun_vals = cell(1, length(steps));
+rk4_vals = cell(1, length(steps));
 
 % allocate cells to store error values
-euler_err_red = zeros(1,n_stepsizes);
-heun_err_red = zeros(1,n_stepsizes);
-rk4_err_red = zeros(1,n_stepsizes);
-euler_err_app = zeros(1,n_stepsizes);
-heun_err_app = zeros(1,n_stepsizes);
-rk4_err_app = zeros(1,n_stepsizes);
+euler_err_red = zeros(1, length(steps));  % TODO: _red ist wohl falsch!
+heun_err_red = zeros(1, length(steps));
+rk4_err_red = zeros(1, length(steps));
+euler_err_app = zeros(1, length(steps));
+heun_err_app = zeros(1, length(steps));
+rk4_err_app = zeros(1, length(steps));
 
-compute_err = @(v_app, v_true, step_size) sqrt(step_size/5*sum((v_app-v_true).^2));
+compute_err = @(p, p_better, dt) sqrt(dt / 5 * sum((p - p_better).^2));
 
-% compute values
+% compute analytic values
 analytic_vals = analytic_sol(times);
 
-for s = 1:n_stepsizes
-    step_size = 2.0^-(s-1);
-    rk4_vals{s} = RK4(y0, t0, 5, step_size, @test_func);
-    euler_vals{s} = Euler(y0, t0, 5, step_size, @test_func);
-    heun_vals{s} = Heun(y0, t0, 5, step_size, @test_func);
+% compute numerical approximation
+for i = 1:length(steps)
+    dt = steps(i);
+    euler_vals{i} = Euler(y0, t0, t_end, dt, f);
+    heun_vals{i} = Heun(y0, t0, t_end, dt, f);
+    rk4_vals{i} = RK4(y0, t0, t_end, dt, f);
 end
 
 % compute error tables
-for s = 1:n_stepsizes
-   step_size = 2.0^-(s-1);
-   stride = ceil(8*step_size);
-   euler_err_red(s) = sqrt(step_size/5*sum((euler_vals{s}-analytic_vals(1:stride:end)).^2));
-   euler_err_app(s) = sqrt(step_size/5*sum((euler_vals{s}-euler_vals{n_stepsizes}(1:stride:end)).^2));
+for i = 1:length(steps)
+    dt = steps(i);
+    % based on the assumption that we use stepsizes 2^-k
+    stride = ceil(dt / steps(end));
 
-   heun_err_red(s) = sqrt(step_size/5*sum((heun_vals{s}-analytic_vals(1:stride:end)).^2));
-   heun_err_app(s) = sqrt(step_size/5*sum((heun_vals{s}-heun_vals{n_stepsizes}(1:stride:end)).^2));
+    euler_err(i) = compute_err(euler_vals{i}, ...
+                               analytic_vals(1:stride:end), dt);
+    euler_err_app(i) = compute_err(euler_vals{i}, ...
+                                   euler_vals{length(steps)}(1:stride:end), dt);
 
-   rk4_err_red(s) = sqrt(step_size/5*sum((rk4_vals{s}-analytic_vals(1:stride:end)).^2));
-   rk4_err_app(s) = sqrt(step_size/5*sum((rk4_vals{s}-rk4_vals{n_stepsizes}(1:stride:end)).^2));
+    heun_err(i) = compute_err(heun_vals{i}, analytic_vals(1:stride:end), ...
+                              dt);
+    heun_err_app(i) = compute_err(heun_vals{i}, ...
+                                  heun_vals{length(steps)}(1:stride:end), dt)
+
+    rk4_err(i) = compute_err(rk4_vals{i}, analytic_vals(1:stride:end), dt);
+    rk4_err_app(i) = compute_err(rk4_vals{i}, ...
+                                 rk4_vals{length(steps)}(1:stride:end), dt);
 end
 
-% display error values
-fprintf('Error values of the Euler method:\n')
-for s = 1:n_stepsizes
-   fprintf('for %s absolute error is: %1.7g\n', step_strings{s}, euler_err_red(s))
+% TODO: Implement error reduction here!
+
+% dprint error table
+fprintf('explicit Euler method (q = 1):\n');
+fprintf('dt\t\t');
+for dt = steps
+    fprintf('%f\t', dt);
 end
-for s = 1:n_stepsizes
-   fprintf('for %s approximated error is: %1.7g\n', step_strings{s}, euler_err_app(s))
+fprintf('\n');
+fprintf('error\t\t');
+for e = euler_err
+    fprintf('%f\t', e);
 end
-fprintf('Error values of the Heun method:\n')
-for s = 1:n_stepsizes
-   fprintf('for %s absolute error is: %1.7g\n', step_strings{s}, heun_err_red(s))
+fprintf('\n')
+%fprintf('error red.\t')
+% TODO: Implement error reduction.
+%for e = euler_err_red
+%    fprintf('\f\t', e);
+%end
+%fprintf('\n')
+fprintf('error app.\t\t')
+for e = euler_err_app
+    fprintf('\f\t', e);
 end
-for s = 1:n_stepsizes
-   fprintf('for %s approximated error is: %1.7g\n', step_strings{s}, heun_err_app(s))
-end
-fprintf('Error values of the Runge-Kutta method of fourth order:\n')
-for s = 1:n_stepsizes
-   fprintf('for %s absolute error is: %1.7g\n', step_strings{s}, rk4_err_red(s))
-end
-for s = 1:n_stepsizes
-   fprintf('for %s approximated error is: %1.7g\n', step_strings{s}, rk4_err_app(s))
-end
+fprintf('\n\n')
+
+% TODO: Copy pase for the rest!
 
 % create figure (fullscreen) with a subplot for each method
 figure('units','normalized','outerposition',[0 0 1 1])
 hold on
 
 % generate plot for euler method
-subplot(1,3,1)
+subplot(1, 3, 1)
 hold on
 title('Integration With Euler''s Method')
 % plot analytic solution
 plot(times, analytic_vals, 'b');
 % plot different timesteps
-for s = 1:n_stepsizes
-    euler_plots(s) = plot(times(1:8*2^-(s-1):end), euler_vals{s}, colors{s});
+for i = 1:length(steps)
+    euler_plots(i) = plot(times(1:8*2^ - (i - 1):end), euler_vals{i}, ...
+                          colors{i});
 end
 legend(euler_plots, step_strings, 'Location', 'NorthWest');
 xlabel('time');
 ylabel('population');
 
 % generate plot for heun method
-subplot(1,3,2)
+subplot(1, 3, 2)
 hold on
 title('Integration With Heun''s Method')
 % plot analytic solution
 plot(times, analytic_vals, 'b');
 % plot different timesteps
-for s = 1:n_stepsizes
-    heun_plots(s) = plot(times(1:8*2^-(s-1):end), heun_vals{s}, colors{s});
+for i = 1:length(steps)
+    heun_plots(i) = plot(times(1:8*2^ - (i - 1):end), heun_vals{i}, colors{i});
 end
 legend(heun_plots, step_strings, 'Location', 'NorthWest');
 xlabel('time');
 ylabel('population');
 
 % generate plot for 4th order runge kutta
-subplot(1,3,3)
+subplot(1, 3, 3)
 hold on
 title('Integration With 4th Order Runge-Kutta')
 % plot analytic solution
 plot(times, analytic_vals, 'b');
 % plot different timesteps
-for s = 1:n_stepsizes
-    rk4_plots(s) = plot(times(1:8*2^-(s-1):end), rk4_vals{s}, colors{s});
+for i = 1:length(steps)
+    rk4_plots(i) = plot(times(1:8*2^ - (i - 1):end), rk4_vals{i}, colors{i});
 end
 legend(rk4_plots, step_strings, 'Location', 'NorthWest');
 xlabel('time');
