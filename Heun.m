@@ -1,5 +1,7 @@
 function [ y ] = Heun(y0, t0, t_end, dt, f)
-% TODO: Documentation.
+%Heun Numerically solves a scalar differential equation of the form
+%     y'(t) = f(t, y(t)), y(t0) = y0 using Heun's method (second-order) with
+%     constant stepsize dt on the interval [t0, t_end].
 
 N = ceil((t_end - t0) / dt);
 

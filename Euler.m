@@ -1,5 +1,7 @@
 function [ y ] = Euler(y0, t0, t_end, dt, f)
-% TODO: Documentation.
+%Euler Numerically solves a scalar differential equation of the form
+%      y'(t) = f(t, y(t)), y(t0) = y0 using the first-order explicit Euler
+%      scheme with constant stepsize dt on the interval [t0, t_end].
 
 N = ceil((t_end - t0) / dt);
 
