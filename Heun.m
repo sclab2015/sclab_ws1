@@ -1,20 +1,17 @@
 function [ y ] = Heun(y0, t0, t_end, dt, f)
-%UNTITLED3 Summary of this function goes here
-%   Detailed explanation goes here
+% TODO: Documentation.
 
-N=ceil((t_end-t0)/dt);
+N = ceil((t_end - t0) / dt);
 
-y=zeros(1, N+1);
-y(1)=y0;
+y = zeros(1, N + 1);
+y(1) = y0;
 
-for k = 1:1:N;
-
-    t=t0+(k-1)*dt;
-    y1=y(k)+dt*f(t, y(k));
-
-    y(k+1)=y(k)+(dt/2)*(f(t, y(k))+f(t+dt, y1));
+% TODO: Wenn t_end - t0 nicht durch dt teilbar ist gehen wir am Ende zu weit!
+for i = 1:N
+    t = t0 + (i - 1) * dt;
+    k1 = dt * f(t, y(i));
+    k2 = dt * f(t + dt, y(i) + k1);
+    y(i + 1) = y(i) + 1/2 * (k1 + k2);
 end
 
-
 end
-
