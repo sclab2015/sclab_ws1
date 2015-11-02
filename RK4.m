@@ -7,7 +7,7 @@ if mod(t_end - t0, dt)
     fprintf('Warning: Integration is done until a full multiple of time step dt is reached!');
 end
 
-N = ceil((t_end - t0) / dt);
+N = ceil((t_end - t0) / dt); %lalala
 
 y = zeros(1, N + 1);
 y(1) = y0;
