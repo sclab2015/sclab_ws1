@@ -2,8 +2,7 @@
 
 % definition of the right-hand side, initial conditions and the analytic
 % solution
-f = @(t, y) (1.0 - y / 10.0) * y;
-%f = @(t,y) y^2
+f = @(t, y) (1.0 - t / 10.0) * t;
 analytic_sol = @(t) 10 ./ (1 + 9 * exp(-t));
 y0 = 1;
 t0 = 0;
@@ -27,6 +26,7 @@ assert(length(steps) == length(step_strings), ...
 euler_vals = cell(1, length(steps));
 heun_vals = cell(1, length(steps));
 rk4_vals = cell(1, length(steps));
+rk4_old_vals = cell(1, length(steps));
 
 % allocate cells to store error values
 euler_err = zeros(1, length(steps));  % TODO: _red ist wohl falsch!
@@ -47,6 +47,7 @@ for i = 1:length(steps)
     euler_vals{i} = Euler(y0, t0, t_end, dt, f);
     heun_vals{i} = Heun(y0, t0, t_end, dt, f);
     rk4_vals{i} = RK4(y0, t0, t_end, dt, f);
+    rk4_old_vals{i} = rungekutta4(y0, t0, t_end, dt, f);
 end
 
 % compute error tables
@@ -185,10 +186,11 @@ title('Integration With 4th Order Runge-Kutta')
 % plot analytic solution
 plot(times, analytic_vals, 'b');
 % plot different timesteps
-for i = 1:length(steps)
+for i = 1:2%length(steps)
     rk4_plots(i) = plot(times(1:8*2^ - (i - 1):end), rk4_vals{i}, colors{i});
+    %plot(times(1:8*2^ - (i - 1):end), rk4_old_vals{i}, 'k*');
 end
-legend(rk4_plots, step_strings, 'Location', 'NorthWest');
+legend(rk4_plots, step_strings{}, 'Location', 'NorthWest');
 xlabel('time');
 ylabel('population');
 
