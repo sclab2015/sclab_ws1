@@ -3,6 +3,10 @@ function [ y ] = Heun(y0, t0, t_end, dt, f)
 %     y'(t) = f(t, y(t)), y(t0) = y0 using Heun's method (second-order) with
 %     constant stepsize dt on the interval [t0, t_end].
 
+if mod(t_end - t0, dt)
+    fprintf('Warning: Integration is done until a full multiple of time step dt is reached!');
+end
+
 N = ceil((t_end - t0) / dt);
 
 y = zeros(1, N + 1);

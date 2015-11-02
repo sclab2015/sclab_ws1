@@ -3,11 +3,14 @@
 % definition of the right-hand side, initial conditions and the analytic
 % solution
 f = @(t, y) (1.0 - y / 10.0) * y;
-%f = @(t,y) y^2
 analytic_sol = @(t) 10 ./ (1 + 9 * exp(-t));
 y0 = 1;
 t0 = 0;
 t_end = 5;
+
+% function to compute error values
+compute_err = @(p, p_better, dt) sqrt(dt / 5 * sum((p - p_better).^2));
+
 
 % definition of time steps and colors for plotting
 steps  = 2.^(0:-1:-3);  % [1; .5; .25; .125]
@@ -35,8 +38,10 @@ rk4_err = zeros(1, length(steps));
 euler_err_app = zeros(1, length(steps));
 heun_err_app = zeros(1, length(steps));
 rk4_err_app = zeros(1, length(steps));
+euler_err_red = zeros(1, length(steps));
+heun_err_red = zeros(1, length(steps));
+rk4_err_red = zeros(1, length(steps));
 
-compute_err = @(p, p_better, dt) sqrt(dt / 5 * sum((p - p_better).^2));
 
 % compute analytic values
 analytic_vals = analytic_sol(times);
@@ -53,13 +58,13 @@ end
 for i = 1:length(steps)
     dt = steps(i);
     % based on the assumption that we use stepsizes 2^-k
-    stride = ceil(dt / steps(end));
+    stride = ceil(dt / steps(end));     % = 8, 4, 2, 1
 
     euler_err(i) = compute_err(euler_vals{i}, ...
                                analytic_vals(1:stride:end), dt);
     euler_err_app(i) = compute_err(euler_vals{i}, ...
                                    euler_vals{length(steps)}(1:stride:end), dt);
-
+                               
     heun_err(i) = compute_err(heun_vals{i}, analytic_vals(1:stride:end), ...
                               dt);
     heun_err_app(i) = compute_err(heun_vals{i}, ...
@@ -70,9 +75,14 @@ for i = 1:length(steps)
                                  rk4_vals{length(steps)}(1:stride:end), dt);
 end
 
-% TODO: Implement error reduction here!
+% compute error reduction
+euler_err_red(2:end) = euler_err(2:end)./euler_err(1:end-1);
+heun_err_red(2:end) = heun_err(2:end)./heun_err(1:end-1);
+rk4_err_red(2:end) = rk4_err(2:end)./rk4_err(1:end-1);
 
-% print error table
+% print error tables
+fprintf('Error tables for the three integration methods:\n');
+fprintf('Table contains zeros where no computation was possible.\n\n');
 % euler
 fprintf('explicit Euler method (q = 1):\n');
 fprintf('dt\t\t');
@@ -85,12 +95,11 @@ for e = euler_err
     fprintf('%f\t', e);
 end
 fprintf('\n')
-%fprintf('error red.\t')
-% TODO: Implement error reduction.
-%for e = euler_err_red
-%    fprintf('%f\t', e);
-%end
-%fprintf('\n')
+fprintf('error red.\t')
+for e = euler_err_red
+    fprintf('%f\t', e);
+end
+fprintf('\n')
 fprintf('error app.\t')
 for e = euler_err_app
     fprintf('%f\t', e);
@@ -109,19 +118,18 @@ for e = heun_err
     fprintf('%f\t', e);
 end
 fprintf('\n')
-%fprintf('error red.\t')
-% TODO: Implement error reduction.
-%for e = euler_err_red
-%    fprintf('%f\t', e);
-%end
-%fprintf('\n')
+fprintf('error red.\t')
+for e = heun_err_red
+    fprintf('%f\t', e);
+end
+fprintf('\n')
 fprintf('error app.\t')
 for e = heun_err_app
     fprintf('%f\t', e);
 end
 fprintf('\n\n')
 
-% euler
+% runge kutta 4
 fprintf('Runge-Kutta method (q = 4):\n');
 fprintf('dt\t\t');
 for dt = steps
@@ -133,12 +141,11 @@ for e = rk4_err
     fprintf('%f\t', e);
 end
 fprintf('\n')
-%fprintf('error red.\t')
-% TODO: Implement error reduction.
-%for e = euler_err_red
-%    fprintf('%f\t', e);
-%end
-%fprintf('\n')
+fprintf('error red.\t')
+for e = rk4_err_red
+    fprintf('%f\t', e);
+end
+fprintf('\n')
 fprintf('error app.\t')
 for e = rk4_err_app
     fprintf('%f\t', e);
