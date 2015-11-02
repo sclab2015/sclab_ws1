@@ -28,9 +28,9 @@ heun_vals = cell(1, length(steps));
 rk4_vals = cell(1, length(steps));
 
 % allocate cells to store error values
-euler_err_red = zeros(1, length(steps));  % TODO: _red ist wohl falsch!
-heun_err_red = zeros(1, length(steps));
-rk4_err_red = zeros(1, length(steps));
+euler_err = zeros(1, length(steps));  % TODO: _red ist wohl falsch!
+heun_err = zeros(1, length(steps));
+rk4_err = zeros(1, length(steps));
 euler_err_app = zeros(1, length(steps));
 heun_err_app = zeros(1, length(steps));
 rk4_err_app = zeros(1, length(steps));
@@ -62,7 +62,7 @@ for i = 1:length(steps)
     heun_err(i) = compute_err(heun_vals{i}, analytic_vals(1:stride:end), ...
                               dt);
     heun_err_app(i) = compute_err(heun_vals{i}, ...
-                                  heun_vals{length(steps)}(1:stride:end), dt)
+                                  heun_vals{length(steps)}(1:stride:end), dt);
 
     rk4_err(i) = compute_err(rk4_vals{i}, analytic_vals(1:stride:end), dt);
     rk4_err_app(i) = compute_err(rk4_vals{i}, ...
@@ -71,7 +71,8 @@ end
 
 % TODO: Implement error reduction here!
 
-% dprint error table
+% print error table
+% euler
 fprintf('explicit Euler method (q = 1):\n');
 fprintf('dt\t\t');
 for dt = steps
@@ -86,16 +87,62 @@ fprintf('\n')
 %fprintf('error red.\t')
 % TODO: Implement error reduction.
 %for e = euler_err_red
-%    fprintf('\f\t', e);
+%    fprintf('%f\t', e);
 %end
 %fprintf('\n')
-fprintf('error app.\t\t')
+fprintf('error app.\t')
 for e = euler_err_app
-    fprintf('\f\t', e);
+    fprintf('%f\t', e);
 end
 fprintf('\n\n')
 
-% TODO: Copy pase for the rest!
+% heun
+fprintf('method of Heun (q = 2):\n');
+fprintf('dt\t\t');
+for dt = steps
+    fprintf('%f\t', dt);
+end
+fprintf('\n');
+fprintf('error\t\t');
+for e = heun_err
+    fprintf('%f\t', e);
+end
+fprintf('\n')
+%fprintf('error red.\t')
+% TODO: Implement error reduction.
+%for e = euler_err_red
+%    fprintf('%f\t', e);
+%end
+%fprintf('\n')
+fprintf('error app.\t')
+for e = heun_err_app
+    fprintf('%f\t', e);
+end
+fprintf('\n\n')
+
+% euler
+fprintf('Runge-Kutta method (q = 4):\n');
+fprintf('dt\t\t');
+for dt = steps
+    fprintf('%f\t', dt);
+end
+fprintf('\n');
+fprintf('error\t\t');
+for e = rk4_err
+    fprintf('%f\t', e);
+end
+fprintf('\n')
+%fprintf('error red.\t')
+% TODO: Implement error reduction.
+%for e = euler_err_red
+%    fprintf('%f\t', e);
+%end
+%fprintf('\n')
+fprintf('error app.\t')
+for e = rk4_err_app
+    fprintf('%f\t', e);
+end
+fprintf('\n\n')
 
 % create figure (fullscreen) with a subplot for each method
 figure('units','normalized','outerposition',[0 0 1 1])
