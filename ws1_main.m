@@ -32,7 +32,7 @@ heun_vals = cell(1, length(steps));
 rk4_vals = cell(1, length(steps));
 
 % allocate cells to store error values
-euler_err = zeros(1, length(steps));  % TODO: _red ist wohl falsch!
+euler_err = zeros(1, length(steps));
 heun_err = zeros(1, length(steps));
 rk4_err = zeros(1, length(steps));
 euler_err_app = zeros(1, length(steps));
